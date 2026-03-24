@@ -6,13 +6,13 @@ This is the official repository of Neural collaborative filtering for unsupervis
 has been published in [Artificial Intelligence in Medicine journal](https://www.sciencedirect.com/science/article/pii/S0933365720312409).
 
 ## Requirements
-This code is tested on Pytorch 1.3.0. Requirements (including pytroch) can be installed using:
+Install dependencies using [uv](https://docs.astral.sh/uv/):
 ```bash
-conda env create -f requirements.yml
+uv sync
 ```
-Activate the environment as 
+Activate the environment:
 ```bash
-source activate mitral_valve_seg
+source .venv/bin/activate
 ```
 
 ## Data

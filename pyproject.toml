@@ -1,0 +1,22 @@
+[project]
+name = "nn-mitralseg"
+version = "0.1.0"
+description = "Neural collaborative filtering for unsupervised mitral valve segmentation in echocardiography"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.0.0",
+    "numpy",
+    "scipy",
+    "scikit-image",
+    "scikit-learn",
+    "matplotlib",
+    "pillow",
+    "opencv-python",
+    "medpy",
+    "simpleitk",
+    "tqdm",
+    "tensorboard",
+    "imageio",
+    "imageio-ffmpeg",
+    "loguru>=0.7.3",
+]
