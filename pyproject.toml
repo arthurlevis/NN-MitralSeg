@@ -2,7 +2,7 @@
 name = "nn-mitralseg"
 version = "0.1.0"
 description = "Neural collaborative filtering for unsupervised mitral valve segmentation in echocardiography"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "torch>=2.0.0",
     "numpy",
@@ -21,4 +21,7 @@ dependencies = [
     "loguru>=0.7.3",
     "moviepy<2",
     "requests>=2.32.5",
+    "neurokit2>=0.2.13",
+    "s3fs>=2026.2.0",
+    "zarr>=3.0",
 ]
