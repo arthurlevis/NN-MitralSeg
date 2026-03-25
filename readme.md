@@ -17,21 +17,29 @@ source .venv/bin/activate
 
 ## Data
 We provide the segmentation labels and the region of interest for the Mitral Valve of 46 videos selected from the publicly available data set EchoNet-Dynamic.
-In order to run the code, the corresponding videos need to be downloaded from [EchoNet-Dynamic](https://echonet.github.io/dynamic/) and placed in the respective folder (with the correct video ID) under nn-mitralseg/data/in/raw/echo_net/.
-Each folder already contains three mask files (<frame_number_starting_at_1>_mask.png) depicting the segmentation maps and one file (box.jpg) describing the region of interest for the mitral valve.
+In order to run the code, the corresponding videos need to be downloaded from [EchoNet-Dynamic](https://echonet.github.io/dynamic/) and placed in the respective folder (with the correct video ID) under nn-mitralseg/data/in/raw/echo_net/. Each folder already contains three mask files (<frame_number_starting_at_1>_mask.png) depicting the segmentation maps and one file (box.jpg) describing the region of interest for the mitral valve.
 
 ## Run the model
-Once the videos are copied into the correct video ID folders, the model can be run by navigating to the source directroy and running the following command:
+Once the videos are copied into the correct video ID folders, the model can be run by running the following command:
 ```bash
-python main.py --config configuration/NNMF.ini
+python source/main.py --config configuration/NNMF_echonet.ini
 ```  
-Note: the conda environamte needs first to be activated.
+Note: environment needs to be activated first.
 
-This will load the data, apply the collaborative filtering for each video, predict the segmentation masks for each frame and save the results in the nn-mitralseg/out/SegNNMF/original/<time-stamp> folder.
-You can track the progress of the training launching tensorboard as
+This will load the data, apply the collaborative filtering for each video, predict the segmentation masks for each frame and save the results in the nn-mitralseg/out/SegNNMF/original/<time-stamp> folder. You can track the progress of the training launching tensorboard as
 ```bash
 tensorboard --logdir runs/*
 ```  
+
+### Configuration                                                                                        |
+
+| Config                        | Stage 2 | Description                                          |
+| ----------------------------- | ------- | ---------------------------------------------------- |
+| `NNMF_echonet.ini`            | TO + TM | Default for low-res videos (EchoNet-Dynamic 112×112) |
+| `NNMF_private.ini`            | OF + TM | For high-res videos (private dataset 400×400)        |
+| `NNMF_test_on_last_valve.ini` | TO + TM | Train on first part, test on last valve              |
+| `NNMF_test_time.ini`          | TO + TM | Timing/benchmark experiment                          |
+| `RNMF.ini`                    | TO      | Baseline RNMF (no neural network)                    |
 
 ## When using this code, please cite
 @article{corinzia2020neural,

@@ -4,6 +4,7 @@ import matplotlib.animation as animation
 import cv2
 import numpy as np
 import os
+import torch
 from numpy.ma import masked_array
 
 
@@ -249,10 +250,7 @@ def window_detection(tensor, option, window_size, search_window_size,
 
 
 def get_free_gpu():
-    os.system('nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp')
-    memory_available = [int(x.split()[2]) for x in
-                        open('tmp', 'r').readlines()]
-    return np.argmax(memory_available)
+    return torch.cuda.current_device()
 
 
 def tensor_to_matrix(matrix3d, n, m):
@@ -329,9 +327,9 @@ def get_valve_image(idx, dt, pred):
 
 
 def softplus(x):
-    return np.where(x == -np.infty, 0,
+    return np.where(x == -np.inf, 0,
                     x * (x >= 0) + np.log1p(np.exp(-np.abs(x))))
 
 
 def softminus(x):
-    return np.where(x == 0, -np.infty, x + np.log1p(-np.exp(-x)))
+    return np.where(x == 0, -np.inf, x + np.log1p(-np.exp(-x)))

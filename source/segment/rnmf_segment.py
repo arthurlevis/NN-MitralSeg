@@ -78,7 +78,7 @@ class SegRNMF(MitralSeg):
 
     def train(self, save_location=None):
 
-        def reshape_to_tensor(a): return np.reshape(a, newshape=(
+        def reshape_to_tensor(a): return np.reshape(a, shape=(
         self.vert, self.horz, self.m))
 
         # RNMF on 2D representation

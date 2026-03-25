@@ -40,8 +40,8 @@ def _get_iou(target, prediction):
     :param prediction:
     :return:
     """
-    target = np.asarray(target).astype(np.bool)
-    prediction = np.asarray(prediction).astype(np.bool)
+    target = np.asarray(target).astype(bool)
+    prediction = np.asarray(prediction).astype(bool)
 
     intersection = np.logical_and(target, prediction)
     union = np.logical_or(target, prediction)
@@ -70,8 +70,8 @@ def _get_dice(im1, im2):
     The order of inputs for `dice` is irrelevant. The result will be
     identical if `im1` and `im2` are switched.
     """
-    im1 = np.asarray(im1).astype(np.bool)
-    im2 = np.asarray(im2).astype(np.bool)
+    im1 = np.asarray(im1).astype(bool)
+    im2 = np.asarray(im2).astype(bool)
 
     if im1.shape != im2.shape:
         raise ValueError("Shape mismatch: im1 and im2 must have the same shape.")
@@ -91,8 +91,8 @@ def _get_window_acc(mask_gt, mask_pred):
     :return:
     """
 
-    mask_gt = mask_gt.astype(np.bool)
-    mask_pred = mask_pred.astype(np.bool)
+    mask_gt = mask_gt.astype(bool)
+    mask_pred = mask_pred.astype(bool)
 
     intersection = np.logical_and(mask_gt, mask_pred)
 

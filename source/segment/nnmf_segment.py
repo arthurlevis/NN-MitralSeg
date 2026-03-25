@@ -110,13 +110,11 @@ class SegNNMF(MitralSeg):
         self.threshold_opt.zero_grad()
         loss_threshold = mse_xs_loss + self.l1_mult * l1_loss + self.l21_mult * l21_loss
         loss_threshold.backward(retain_graph=True)
-        self.threshold_opt.step()
 
     def train_neu_mf(self, mse_x_loss):
         self.neu_mf_opt.zero_grad()
         loss_neu_mf = mse_x_loss
         loss_neu_mf.backward(retain_graph=True)
-        self.neu_mf_opt.step()
 
     def train_embedding(self, mse_x_loss, embedding_reg, spatial_ref, temporal_reg, valve=None):
         self.embedding_opt.zero_grad()
@@ -129,7 +127,11 @@ class SegNNMF(MitralSeg):
             for par in self.embedding_params:
                 if par.shape[0] == self.m:
                     par.grad[mid:, ...] = 0
+
+    def step_all_optimizers(self):
+        self.neu_mf_opt.step()
         self.embedding_opt.step()
+        self.threshold_opt.step()
 
     def train(self, save_location=None):
         # initialize epochs
@@ -173,7 +175,6 @@ class SegNNMF(MitralSeg):
                 self.batchsize_eff = pixel.shape[0]
                 # forward pass
                 x_out, s_out = self.nnmf.forward(pixel, frame, target)
-                self.s[pixel, frame] = torch.squeeze(s_out)
                 # compute losses
                 mse_xs_loss = nn.functional.mse_loss(target, x_out + s_out)
                 mse_x_loss = nn.functional.mse_loss(target, x_out)
@@ -185,14 +186,15 @@ class SegNNMF(MitralSeg):
 
                 # backward and step
                 self.train_neu_mf(mse_x_loss)
-
                 self.train_embedding(mse_x_loss, embedding_reg, spatial_reg, temporal_reg)
                 self.train_threshold(mse_xs_loss, l1_loss, l21_loss)
+                self.step_all_optimizers()
 
-                # update x_hat and s
+                # update x_hat and s (after backward passes)
                 start_time = time.time()
-                self.x_hat[pixel, frame] = torch.squeeze(x_out.detach())
-                self.s = self.s.detach()
+                with torch.no_grad():
+                    self.s[pixel, frame] = torch.squeeze(s_out)
+                    self.x_hat[pixel, frame] = torch.squeeze(x_out)
 
                 time_detach += time.time() - start_time
                 training_time += time.time() - start_time_epoch
@@ -210,8 +212,8 @@ class SegNNMF(MitralSeg):
                     print(data_dict)
 
                     self.save_scalar_summary(data_dict, train_writer, global_step)
-                    self.s_reshape = np.reshape(self.s.cpu().numpy(), newshape=(self.vert, self.horz, self.m))
-                    self.myocardium = np.reshape(self.x_hat.cpu().numpy(), newshape=(self.vert, self.horz, self.m))
+                    self.s_reshape = np.reshape(self.s.cpu().numpy(), shape=(self.vert, self.horz, self.m))
+                    self.myocardium = np.reshape(self.x_hat.cpu().numpy(), shape=(self.vert, self.horz, self.m))
 
                 if self.early_stopping:
                     cum_mse_xs_loss += mse_xs_loss.detach() / len(self.train_loader)
@@ -225,8 +227,8 @@ class SegNNMF(MitralSeg):
             if ep == 0 or (ep % self.save_data_every == 0 or ep == self.epochs - 1):
                 print('extracting tensors for segmentation')
                 start_time = time.time()
-                self.s_reshape = np.reshape(self.s.cpu().numpy(), newshape=(self.vert, self.horz, self.m))
-                self.myocardium = np.reshape(self.x_hat.cpu().numpy(), newshape=(self.vert, self.horz, self.m))
+                self.s_reshape = np.reshape(self.s.cpu().numpy(), shape=(self.vert, self.horz, self.m))
+                self.myocardium = np.reshape(self.x_hat.cpu().numpy(), shape=(self.vert, self.horz, self.m))
                 print('finish extracting in ', time.time() - start_time, "seconds")
                 print("window detection...")
                 start_time = time.time()

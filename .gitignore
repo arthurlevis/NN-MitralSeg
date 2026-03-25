@@ -40,3 +40,14 @@ htmlcov/
 
 paper.pdf
 method.md
+comparison.md
+tensorboard.md
+*.pkl
+images/figure1.png
+images/sparse_0X5D3BE1C6F1BDBF8.gif
+images/window_0X5D3BE1C6F1BDBF8.png
+images/valve_0X5D3BE1C6F1BDBF8.gif
+
+# Videos
+*.mp4
+*.avi

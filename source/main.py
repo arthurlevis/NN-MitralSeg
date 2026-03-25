@@ -12,7 +12,7 @@ from shutil import copyfile
 import csv
 import socket
 from echos import DataMaster
-import pickle5 as pickle
+import pickle as pickle
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -30,9 +30,9 @@ if __name__ == '__main__':
     else:
         device = 'cpu'
     print('INFO: Start on device %s' % device)
-    print(os.path.join(dir_path, '../configuration/NNMF.ini'))
+    print(os.path.join(dir_path, '../configuration/NNMF_echonet.ini'))
     parser = argparse.ArgumentParser()
-    parser.add_argument('-y', '--config', default=os.path.join(dir_path, 'configuration/NNMF.ini'))
+    parser.add_argument('-y', '--config', default=os.path.join(dir_path, 'configuration/NNMF_echonet.ini'))
     args = parser.parse_args()
     conf = args.config
     config = ConfigParserEcho()

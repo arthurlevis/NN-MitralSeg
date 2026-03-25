@@ -68,7 +68,7 @@ class MitralSeg:
             S_aniso[:, :, j] = mp.anisotropic_diffusion(S_prime[:, :, j], niter=5, kappa=20)
 
         # remove from rnmf
-        S_aniso = np.reshape(S_prime, newshape=M.shape)
+        S_aniso = np.reshape(S_prime, shape=M.shape)
         M_prime = M - M * S_aniso
         return M, M_prime
 
@@ -100,7 +100,7 @@ class MitralSeg:
         valve_aniso[valve_aniso > 0] = 1
 
         if connected_struct:
-            structure = np.ones((3, 3, 3), dtype=np.int)
+            structure = np.ones((3, 3, 3), dtype=int)
 
             # find connected commponents
             labeled, ncomp = label(valve_aniso, structure)

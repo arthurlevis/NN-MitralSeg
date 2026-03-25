@@ -188,7 +188,7 @@ class EchoProcess:
 
             box = np.nan_to_num(box).astype(np.uint8)
 
-            self.echo.labels['box'] = np.asarray(box, dtype=np.bool)
+            self.echo.labels['box'] = np.asarray(box, dtype=bool)
 
             if self.resize:
                 box_rs = resize_frame(box, self.side_length)

@@ -2,9 +2,8 @@ import os
 import cv2
 import numpy as np
 import shutil
-import scipy.misc
 import glob
-import pickle5 as pickle
+import pickle as pickle
 from video_processing import EchoProcess
 import pickle
 import json
