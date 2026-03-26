@@ -35,8 +35,8 @@ tensorboard --logdir runs/*
 
 | Config                        | Stage 2 | Description                                          |
 | ----------------------------- | ------- | ---------------------------------------------------- |
-| `NNMF_echonet.ini`            | TO + TM | Default for low-res videos (EchoNet-Dynamic 112×112) |
-| `NNMF_private.ini`            | OF + TM | For high-res videos (private dataset 400×400)        |
+| `NNMF_default.ini`            | TO + TM | Default for low-res videos (EchoNet-Dynamic 112×112) |
+| `NNMF_high_res.ini`           | OF + TM | For high-res videos (private dataset 400×400)        |
 | `NNMF_test_on_last_valve.ini` | TO + TM | Train on first part, test on last valve              |
 | `NNMF_test_time.ini`          | TO + TM | Timing/benchmark experiment                          |
 | `RNMF.ini`                    | TO      | Baseline RNMF (no neural network)                    |
