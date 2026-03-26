@@ -393,20 +393,19 @@ class SegNNMF(MitralSeg):
             writer.add_figure('segmentation', fig, global_step=global_step)
 
         # predicted and ground truth window
-        if self.mask_gt is not None:
+        if not initialization and self.mask is not None:
             fig = plt.figure()
             frame = np.squeeze(self.matrix3d[..., 0])
 
-            if initialization:
-                mask = np.zeros(shape=self.mask_gt.shape)
+            if len(self.mask.shape) == 3:
+                mask = np.squeeze(self.mask[..., 0])
             else:
-                if len(self.mask.shape) == 3:
-                    mask = np.squeeze(self.mask[..., 0])
-                else:
-                    mask = self.mask
+                mask = self.mask
 
-            color_image = np.clip(np.dstack([0.75 * frame + mask, 0.75 * frame, 0.75 * frame + self.mask_gt]), a_min=0,
-                                  a_max=1)
+            if self.mask_gt is not None:
+                color_image = np.clip(np.dstack([0.75 * frame + mask, 0.75 * frame, 0.75 * frame + self.mask_gt]), a_min=0, a_max=1)
+            else:
+                color_image = np.clip(np.dstack([0.75 * frame + mask, 0.75 * frame, 0.75 * frame]), a_min=0, a_max=1)
             plt.imshow(color_image)
             writer.add_figure('window', fig, global_step=global_step)
 
