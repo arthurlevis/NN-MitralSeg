@@ -50,9 +50,14 @@ images/window_0X5D3BE1C6F1BDBF8.png
 images/valve_0X5D3BE1C6F1BDBF8.gif
 
 # *.ini
-*.png
+# *.png
 *.txt
 
 # Videos
-*.mp4
+# *.mp4
 *.avi
+
+data/in/raw/echonet-lvh/
+data/in/raw/imagine-health/
+data/in/raw/imagine-health_high-res/
+
