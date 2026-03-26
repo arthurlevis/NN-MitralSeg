@@ -76,11 +76,16 @@ def extract_ecg(root) -> tuple[np.ndarray, np.ndarray]:
     return reconstruct_ecg_signal(ecg_data, ts_sec, ts_nsec)
 
 
-def detect_r_peaks(times: np.ndarray, amplitudes: np.ndarray) -> np.ndarray:
+def detect_r_peaks(times: np.ndarray, amplitudes: np.ndarray, method: str = "scipy") -> np.ndarray:
     """Detect R-peaks in ECG signal. Returns peak times."""
     sample_rate = 1.0 / np.median(np.diff(times))
     min_distance = int(0.4 * sample_rate)
-    peaks, _ = find_peaks(amplitudes, prominence=1.0, distance=min_distance)
+    if method == "neurokit2":
+        import neurokit2 as nk
+        _, info = nk.ecg_peaks(amplitudes, sampling_rate=sample_rate)
+        peaks = np.array(info["ECG_R_Peaks"], dtype=int)
+    else:
+        peaks, _ = find_peaks(amplitudes, prominence=1.0, distance=min_distance)
     return times[peaks]
 
 
@@ -103,6 +108,43 @@ def compute_cycle_indices(r_peak_times: np.ndarray, frame_times: np.ndarray) -> 
         if start_idx < end_idx <= len(frame_times):
             cycles.append((start_idx, end_idx))
     return cycles
+
+
+def visualize_peak_detection(times: np.ndarray, amplitudes: np.ndarray, r_peak_times: np.ndarray, 
+                             frame_times: np.ndarray, cycles: list[tuple[int, int]], output_path: str):
+    """Save ECG signal with detected R-peaks for used cycles only."""
+    if not cycles:
+        return
+    
+    # Time range covering used cycles
+    t_start = frame_times[cycles[0][0]]
+    t_end = frame_times[cycles[-1][1] - 1]
+    
+    # Filter ECG to this range
+    mask = (times >= t_start) & (times <= t_end)
+    times_crop = times[mask]
+    amp_crop = amplitudes[mask]
+    
+    fig, ax = plt.subplots(figsize=(14, 6))
+    t0 = times_crop[0]
+    ax.plot(times_crop - t0, amp_crop, "b-", linewidth=0.5, label="ECG Signal")
+    
+    # R-peaks in range
+    peak_mask = (r_peak_times >= t_start) & (r_peak_times <= t_end)
+    peaks_in_range = r_peak_times[peak_mask]
+    peak_indices = np.clip(np.searchsorted(times_crop, peaks_in_range), 0, len(times_crop) - 1)
+    ax.plot(times_crop[peak_indices] - t0, amp_crop[peak_indices], "ro", markersize=8, label=f"R-peaks ({len(peaks_in_range)})")
+    
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel("Amplitude")
+    ax.set_title(f"ECG Signal ({len(cycles)} cycles)")
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150)
+    plt.close()
 
 
 def create_sector_mask(height: int, width: int, sector_half_angle_deg: float = 35.0) -> np.ndarray:
@@ -141,6 +183,8 @@ def main():
     parser.add_argument("--patient-id", required=True, help="Patient ID")
     parser.add_argument("--resize", type=int, nargs=2, default=[112, 112], metavar=("W", "H"), help="Resize to WxH (default: 112 112)")
     parser.add_argument("--num-sequences", type=int, help="Max sequences to extract (default: all)")
+    parser.add_argument("--sequence-length", type=int, default=4, help="R-R intervals per sequence (default: 4)")
+    parser.add_argument("--ecg-method", choices=["scipy", "neurokit2"], default="scipy", help="R-peak detection method")
     args = parser.parse_args()
 
     print(f"Opening zarr: {args.input_path}")
@@ -151,7 +195,7 @@ def main():
 
     print("Extracting ECG and detecting R-peaks...")
     ecg_times, ecg_amplitudes = extract_ecg(root)
-    r_peak_times = detect_r_peaks(ecg_times, ecg_amplitudes)
+    r_peak_times = detect_r_peaks(ecg_times, ecg_amplitudes, method=args.ecg_method)
     print(f"  Found {len(r_peak_times)} R-peaks")
 
     frame_times, fps = get_frame_timestamps(obs_group, n_frames)
@@ -163,8 +207,8 @@ def main():
     h, w = data.shape[1], data.shape[2] if data.ndim >= 3 else data.shape[-1]
     mask = create_sector_mask(h, w)
 
-    # Group cycles into sequences of 4
-    intervals_per_seq = 4
+    # Group cycles into sequences
+    intervals_per_seq = args.sequence_length
     n_sequences = len(cycles) // intervals_per_seq
     if args.num_sequences:
         n_sequences = min(n_sequences, args.num_sequences)
@@ -172,8 +216,21 @@ def main():
         print(f"Warning: Only {len(cycles)} intervals, need at least {intervals_per_seq}")
         return
 
+    # Compute used cycles for visualization
+    used_cycles = cycles[:n_sequences * intervals_per_seq]
+
     output_base = Path(args.output_path)
     output_base.mkdir(parents=True, exist_ok=True)
+    
+    # # Save ECG visualization and method
+    # visualize_peak_detection(ecg_times, ecg_amplitudes, r_peak_times, frame_times, used_cycles,
+    #                          str(output_base / f"{args.patient_id}_ecg_peaks.png"))
+    # with open(output_base / f"{args.patient_id}_ecg_method.txt", "w") as f:
+    #     f.write(f"method: {args.ecg_method}\n")
+    #     f.write(f"r_peaks: {len(r_peak_times)}\n")
+    #     f.write(f"cycles_used: {len(used_cycles)}\n")
+    #     f.write(f"fps: {fps:.1f}\n")
+    
     resize_w, resize_h = args.resize
 
     print(f"Saving {n_sequences} sequences to {output_base}")
