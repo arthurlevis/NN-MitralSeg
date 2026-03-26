@@ -90,12 +90,16 @@ if __name__ == '__main__':
         data_folder = dtMaster.dt.echos[0].pickle_folder
 
     # get list of the echos in the data folder
-    video_list = os.listdir(os.path.join(dir_path, str(data_folder)))
+    video_list = sorted(os.listdir(os.path.join(dir_path, str(data_folder))))
     if files_done:
         video_list = [p for p in video_list if all([a not in p for a in files_done])]
     if patients:
         video_list = [p for p in video_list if any([a in p for a in patients])]
     print(video_list)
+
+    # save config at start
+    os.makedirs(os.path.join("runs", date_time), exist_ok=True)
+    copyfile(conf, os.path.join("runs", date_time, "config.ini"))
 
     scores = []
     for i in range(len(video_list)):
@@ -135,7 +139,7 @@ if __name__ == '__main__':
         seg.set_labels(dt.labels)
 
         save_location_runs = os.path.join("runs", date_time, patient_id)
-        os.makedirs(save_location_runs)
+        os.makedirs(save_location_runs, exist_ok=True)
 
         # train the model
         score = seg.train(save_location=save_location_runs)
@@ -144,9 +148,6 @@ if __name__ == '__main__':
 
         del seg
         time.sleep(10)
-
-    # copy config
-    copyfile(conf, os.path.join("runs", date_time, "config.ini"))
 
     # write scores to *.csv
     keys = scores[0].keys()
