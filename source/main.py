@@ -157,16 +157,17 @@ if __name__ == '__main__':
         dict_writer.writeheader()
         dict_writer.writerows(scores)
 
-    # evaluate scores:
-    print("\nValve IOU: ", np.mean([e['iou'] for e in scores]))
-    print("Valve Dice", np.mean([e['dice'] for e in scores]))
-    print("Window Acc", np.mean([e['window_acc'] for e in scores]))
-    print("Window IOU", np.mean([e['window_iou'] for e in scores]))
+    # evaluate scores (only if GT available)
+    if scores and 'iou' in scores[0]:
+        print("\nValve IOU: ", np.mean([e['iou'] for e in scores]))
+        print("Valve Dice", np.mean([e['dice'] for e in scores]))
+        print("Window Acc", np.mean([e['window_acc'] for e in scores]))
+        print("Window IOU", np.mean([e['window_iou'] for e in scores]))
 
-    print("Number window over 0.65: ", len(
-        [e['window_acc'] for e in scores if round(e['window_acc'], 2) >= 0.65]))
-    print("Number window over 0.85: ", len(
-        [e['window_acc'] for e in scores if round(e['window_acc'], 2) >= 0.85]))
+        print("Number window over 0.65: ", len(
+            [e['window_acc'] for e in scores if round(e['window_acc'], 2) >= 0.65]))
+        print("Number window over 0.85: ", len(
+            [e['window_acc'] for e in scores if round(e['window_acc'], 2) >= 0.85]))
 
     print("Saved scores to: ", f_score)
     print("Saved segmentation to: out/SegRNMF/original/runs/{}".format(date_time))
